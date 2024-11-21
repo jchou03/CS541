@@ -91,6 +91,17 @@ sentence = [0, 10, 34, 87, 0, 55]
 DO NOT use for-loops in your code. In the real world when training large models, you will have billions of such words, and hence using for-loops will be impractical.
 """
 
+def one_hot_encode(sentence, vocab_size):
+  one_hot = np.zeros((len(sentence), vocab_size))
+
+  # handle padding values by ignoring values of padding (word == 100)
+  # mask = np.array(sentence) < vocab_size
+  # one_hot[np.arange(len(sentence))[mask], np.array(sentence)[mask]] = 1
+
+  one_hot[np.arange(len(sentence)), np.array(sentence)] = 1
+
+  return one_hot
+
 def question_1(sentence):
     """
     DO NOT change the name of the function.
@@ -99,21 +110,15 @@ def question_1(sentence):
     # Write your code in this block -----------------------------------------------------------
     total_words = 100
 
-    one_hot = np.zeros((len(sentence), total_words))
-
-    # handle padding values by ignoring values of padding (word == 100)
-    mask = np.array(sentence) < total_words
-
-    one_hot[np.arange(len(sentence))[mask], np.array(sentence)[mask]] = 1
-
     # End of your code ------------------------------------------------------------------------
-    return one_hot
+    return one_hot_encode(sentence, total_words)
 
 
 # test your function, using the example.
 # We will test your function with more test cases when grading
 one_hot = question_1(sentence)
 print(one_hot.shape)
+print(one_hot)
 
 """## **1.1 Code:** Padding to create a batch *(7 pts)*
 
@@ -134,7 +139,8 @@ def question_2(arr: np.ndarray) -> np.ndarray:
     """
     # Write your code in this block -----------------------------------------------------------
 
-    padded_onehot = np.apply_along_axis(question_1, 1, arr)
+    # couldn't run function or ran into an error with autograder (does not return value)
+    padded_onehot = np.apply_along_axis(one_hot_encode, 1, arr, 101)
 
     # End of your code ------------------------------------------------------------------------
     return padded_onehot
@@ -155,7 +161,7 @@ sentences = [
 
 padded_out = question_2(np.array(sentences))
 
-print("padded output:\n", padded_out)
+print("padded output:\n", padded_out.shape)
 
 """# **Question 2**. Data splitting (*10 total points*)
 
@@ -208,7 +214,7 @@ def question_3(data):
     map = {"Virginica": 0, "Versicolor": 1, "Setosa": 2}
     mapFunc = np.vectorize(lambda c : map[c])
 
-    X = data[:, 0:3]
+    X = data[:, 0:4]
     y = mapFunc(data[:, 4])
 
     # End of your code ------------------------------------------------------------------------
@@ -265,6 +271,9 @@ def question_4(X, y):
 
 # Test your function
 X_train, y_train, X_test, y_test = question_4(X, y)
+print(len(X_train), len(y_train))
+print(len(X_train[0]))
+print(len(X_test), len(y_test))
 
 """## 2.3 **Code:** Training Bias (5 pts)
 
@@ -299,9 +308,9 @@ def question_5(X, y):
     X = X[p]
     y = y[p]
 
-    X_train = np.empty((0, 3))
+    X_train = np.empty((0, 4))
     y_train = np.array([])
-    X_test = np.empty((0, 3))
+    X_test = np.empty((0, 4))
     y_test = np.array([])
 
     for i, label in enumerate(y):
@@ -498,6 +507,12 @@ def question_10(X: np.ndarray, y: np.ndarray, n_neighbors_list: List[int], k: in
     # Write your code in this block -----------------------------------------------------------
     scores = [question_9(X, y, n, k) for n in n_neighbors_list]
     plt.plot(n_neighbors_list, scores)
+
+    plt.title("n_neighbors to accuracy for KNN")
+    plt.xlabel("n_neighbors")
+    plt.ylabel("Accuracy Score")
+    plt.legend(loc="best")
+    plt.tight_layout()
 
     # End of your code ------------------------------------------------------------------------
 
